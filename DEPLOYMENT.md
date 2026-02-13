@@ -71,11 +71,17 @@ For a scalable, containerized deployment, you can use **Google Cloud Run**.
 
 ## 1. Prerequisites
 *   A [Google Cloud Project](https://console.cloud.google.com/).
-*   [gcloud CLI](https://cloud.google.com/sdk/docs/install) installed and authenticated (`gcloud auth login`).
 *   Billing enabled on your project.
 
+**Option A: Install CLI Locally**
+*   [gcloud CLI](https://cloud.google.com/sdk/docs/install) installed and authenticated (`gcloud auth login`).
+
+**Option B: Use Cloud Shell (Easiest)**
+*   Go to [shell.cloud.google.com](https://shell.cloud.google.com).
+*   This gives you a browser-based terminal with `gcloud` pre-installed.
+
 ## 2. Enable Services
-Run these commands in your terminal:
+Run these commands in your terminal (or Cloud Shell):
 ```bash
 gcloud services enable cloudbuild.googleapis.com run.googleapis.com containerregistry.googleapis.com
 ```
@@ -101,7 +107,7 @@ gcloud run deploy sweetshop-app \
 > **Important Note on Images:**
 > This application currently saves uploaded product images to the **local file system** (`public/uploads`).
 >
-> On cloud platforms like Vercel or Netlify, the file system is **ephemeral** (temporary). This means:
+> On cloud platforms like Vercel, Netlify, or Cloud Run, the file system is **ephemeral** (temporary). This means:
 > 1.  Images you upload in production **will disappear** when the server restarts or redeploys.
 > 2.  Images uploaded locally and pushed to GitHub *will* allow display, but new uploads won't persist.
 >
