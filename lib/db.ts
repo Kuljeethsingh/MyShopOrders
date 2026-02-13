@@ -8,17 +8,9 @@ const SPREADSHEET_ID = process.env.GOOGLE_SHEET_ID;
 const GOOGLE_CLIENT_EMAIL = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
 const GOOGLE_PRIVATE_KEY = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n');
 
-const serviceAccountAuth = new JWT({
-    email: GOOGLE_CLIENT_EMAIL,
-    key: GOOGLE_PRIVATE_KEY,
-    scopes: [
-        'https://www.googleapis.com/auth/spreadsheets',
-    ],
-});
-
-// Singleton Doc instance
-export const doc = new GoogleSpreadsheet(SPREADSHEET_ID || "", serviceAccountAuth);
-let isDocLoaded = false;
+// Lazy Doc instance
+let doc: GoogleSpreadsheet | null = null;
+let serviceAccountAuth: JWT | null = null;
 
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000;
@@ -38,10 +30,31 @@ async function withRetry<T>(fn: () => Promise<T>, operationName: string): Promis
 }
 
 export async function loadDoc() {
-    if (!isDocLoaded) {
-        await withRetry(() => doc.loadInfo(), 'doc.loadInfo');
-        isDocLoaded = true;
+    if (!doc) {
+        if (!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || !process.env.GOOGLE_PRIVATE_KEY || !process.env.GOOGLE_SHEET_ID) {
+            console.error("Missing Google Sheets credentials in environment variables.");
+            // Return null or throw? Throwing is better but might crash app if not handled.
+            throw new Error("Missing Google Sheets credentials");
+        }
+
+        const GOOGLE_CLIENT_EMAIL = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+        const GOOGLE_PRIVATE_KEY = process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n');
+        const SPREADSHEET_ID = process.env.GOOGLE_SHEET_ID;
+
+        serviceAccountAuth = new JWT({
+            email: GOOGLE_CLIENT_EMAIL,
+            key: GOOGLE_PRIVATE_KEY,
+            scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+        });
+
+        doc = new GoogleSpreadsheet(SPREADSHEET_ID, serviceAccountAuth);
     }
+
+    // We can't rely on isDocLoaded boolean if we recreate doc. 
+    // Just check if title is loaded or force loadInfo.
+    // doc.loadInfo() is idempotent enough.
+    await withRetry(() => doc!.loadInfo(), 'doc.loadInfo');
+
     return doc;
 }
 
@@ -193,9 +206,7 @@ export async function verifyOTPAndResetPassword(email: string, otp: string, newP
 }
 
 async function ensureUserColumns(sheet: any) {
-    if (!isDocLoaded) await sheet._spreadsheet.loadInfo(); // Access private prop safely? Or trust loadDoc
-    // Actually sheet object has access to headers if loaded. 
-    // But we need to load header row specifically
+    // Sheet header loading is sufficient
     await sheet.loadHeaderRow();
     const headers = sheet.headerValues;
     const newHeaders = [...headers];
