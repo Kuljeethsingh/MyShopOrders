@@ -1,6 +1,9 @@
 # Stage 1: Full App
 FROM node:20-alpine
 
+# Install compatibility libraries for Next.js (required for Alpine)
+RUN apk add --no-cache libc6-compat
+
 WORKDIR /app
 
 # Install dependencies
