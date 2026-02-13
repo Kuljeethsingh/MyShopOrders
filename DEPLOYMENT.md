@@ -29,11 +29,47 @@ Click **"Deploy"**. Vercel will build your application and launch it.
 
 ---
 
+# ⚡ Deploying to Netlify
+
+You can also deploy to **Netlify**, which has excellent support for Next.js.
+
+## 1. Create a Netlify Account
+Go to [netlify.com](https://www.netlify.com/) and sign up using your **GitHub** account.
+
+## 2. Import Your Project
+1.  Click **"Add new site"** -> **"Import an existing project"**.
+2.  Select **GitHub**.
+3.  Authorize Netlify to access your repositories.
+4.  Search for and select `MyShopOrders`.
+
+## 3. Build Settings
+Netlify usually detects Next.js automatically.
+*   **Build command:** `npm run build`
+*   **Publish directory:** `.next`
+*   *(Note: Netlify may install the `@netlify/plugin-nextjs` automatically).*
+
+## 4. Configure Environment Variables
+1.  Click **"Show advanced"** or go to **"Site settings"** -> **"Environment variables"** later.
+2.  Add all variables from your `.env.local`:
+    *   `GOOGLE_SHEET_ID`
+    *   `GOOGLE_SERVICE_ACCOUNT_EMAIL`
+    *   `GOOGLE_PRIVATE_KEY` (Copy the full key carefully)
+    *   `NEXTAUTH_SECRET`
+    *   `NEXTAUTH_URL` (Your Netlify site URL, e.g., `https://your-site.netlify.app`)
+    *   `GMAIL_USER`
+    *   `GMAIL_APP_PASSWORD`
+    *   `NEXT_PUBLIC_RAZORPAY_KEY_ID`
+
+## 5. Deploy
+Click **"Deploy site"**.
+
+---
+
 > [!WARNING]
 > **Important Note on Images:**
 > This application currently saves uploaded product images to the **local file system** (`public/uploads`).
 >
-> On cloud platforms like Vercel, the file system is **ephemeral** (temporary). This means:
+> On cloud platforms like Vercel or Netlify, the file system is **ephemeral** (temporary). This means:
 > 1.  Images you upload in production **will disappear** when the server restarts or redeploys.
 > 2.  Images uploaded locally and pushed to GitHub *will* allow display, but new uploads won't persist.
 >
