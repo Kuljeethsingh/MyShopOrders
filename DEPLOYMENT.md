@@ -65,6 +65,38 @@ Click **"Deploy site"**.
 
 ---
 
+# ☁️ Deploying to Google Cloud Run
+
+For a scalable, containerized deployment, you can use **Google Cloud Run**.
+
+## 1. Prerequisites
+*   A [Google Cloud Project](https://console.cloud.google.com/).
+*   [gcloud CLI](https://cloud.google.com/sdk/docs/install) installed and authenticated (`gcloud auth login`).
+*   Billing enabled on your project.
+
+## 2. Enable Services
+Run these commands in your terminal:
+```bash
+gcloud services enable cloudbuild.googleapis.com run.googleapis.com containerregistry.googleapis.com
+```
+
+## 3. Deploy
+Run the following command (replace `PROJECT_ID` with your actual project ID):
+
+```bash
+gcloud run deploy sweetshop-app \
+  --source . \
+  --platform managed \
+  --region us-central1 \
+  --allow-unauthenticated \
+  --set-env-vars GOOGLE_SHEET_ID="your_sheet_id",GOOGLE_SERVICE_ACCOUNT_EMAIL="your_email",NEXTAUTH_URL="https://your-cloud-run-url",NEXTAUTH_SECRET="your_secret" 
+  # ... add all other env vars here separated by specific commas
+```
+
+*Note: You can also set environment variables in the Google Cloud Console UI after deployment.*
+
+---
+
 > [!WARNING]
 > **Important Note on Images:**
 > This application currently saves uploaded product images to the **local file system** (`public/uploads`).
