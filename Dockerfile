@@ -1,23 +1,18 @@
+# Stage 1: Minimal test
 FROM node:20-alpine
 
 WORKDIR /app
 
-# Install dependencies
-COPY package.json package-lock.json* ./
-RUN npm install
+# Create a simple hello world server
+RUN echo "const http = require('http');" > server.js && \
+    echo "const server = http.createServer((req, res) => {" >> server.js && \
+    echo "  res.statusCode = 200;" >> server.js && \
+    echo "  res.setHeader('Content-Type', 'text/plain');" >> server.js && \
+    echo "  res.end('Hello from Cloud Run! Infrastructure is working.');" >> server.js && \
+    echo "});" >> server.js && \
+    echo "server.listen(3000, '0.0.0.0', () => {" >> server.js && \
+    echo "  console.log('Server running on port 3000');" >> server.js && \
+    echo "});" >> server.js
 
-# Copy source
-COPY . .
-
-# Build
-# Disable telemetry during build
-ENV NEXT_TELEMETRY_DISABLED 1
-# Increase memory
-ENV NODE_OPTIONS=--max_old_space_size=4096
-
-RUN npm run build
-
-# Start
-ENV PORT 3000
 EXPOSE 3000
-CMD ["npm", "start"]
+CMD ["node", "server.js"]
