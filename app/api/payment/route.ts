@@ -1,4 +1,3 @@
-
 import { NextResponse } from 'next/server';
 import { getRazorpay } from '@/lib/razorpay';
 import crypto from 'crypto';
@@ -14,6 +13,7 @@ export async function POST(req: Request) {
     };
 
     try {
+        const razorpay = getRazorpay();
         const order = await razorpay.orders.create(options);
         return NextResponse.json(order);
     } catch (error) {
