@@ -80,7 +80,17 @@ For a scalable, containerized deployment, you can use **Google Cloud Run**.
 *   Go to [shell.cloud.google.com](https://shell.cloud.google.com).
 *   This gives you a browser-based terminal with `gcloud` pre-installed.
 
-## 2. Enable Services
+## 2. Setup Project (Crucial Step)
+1.  List your projects to find your **Project ID** (not the name):
+    ```bash
+    gcloud projects list
+    ```
+2.  Set your project:
+    ```bash
+    gcloud config set project YOUR_PROJECT_ID
+    ```
+
+## 3. Enable Services
 Run these commands in your terminal (or Cloud Shell):
 ```bash
 gcloud services enable cloudbuild.googleapis.com run.googleapis.com containerregistry.googleapis.com
