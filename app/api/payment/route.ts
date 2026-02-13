@@ -1,6 +1,6 @@
 
 import { NextResponse } from 'next/server';
-import { razorpay } from '@/lib/razorpay';
+import { getRazorpay } from '@/lib/razorpay';
 import crypto from 'crypto';
 import { createOrder } from '@/lib/db';
 
