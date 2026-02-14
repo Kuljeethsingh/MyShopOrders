@@ -21,7 +21,15 @@ ENV NODE_OPTIONS=--max_old_space_size=4096
 
 RUN npm run build
 
+# Copy static assets to standalone directory for production
+RUN mkdir -p .next/standalone/.next/static && \
+    mkdir -p .next/standalone/public && \
+    cp -r .next/static .next/standalone/.next/ && \
+    cp -r public .next/standalone/
+
 # Start
 ENV PORT 8080
 EXPOSE 8080
-CMD ["sh", "-c", "npm start"]
+
+# Run the standalone server directly
+CMD ["node", ".next/standalone/server.js"]
