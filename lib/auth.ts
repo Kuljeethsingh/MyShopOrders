@@ -23,6 +23,15 @@ export const authOptions: NextAuthOptions = {
             async authorize(credentials) {
                 if (!credentials?.email || !credentials?.password) return null;
 
+                // DEBUG LOGGING FOR CLOUD RUN
+                console.log("Attempting login for:", credentials.email);
+                console.log("Environment Check:", {
+                    HAS_GOOGLE_SHEET_ID: !!process.env.GOOGLE_SHEET_ID,
+                    HAS_GOOGLE_SERVICE_ACCOUNT_EMAIL: !!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+                    HAS_GOOGLE_PRIVATE_KEY: !!process.env.GOOGLE_PRIVATE_KEY,
+                    PRIVATE_KEY_LENGTH: process.env.GOOGLE_PRIVATE_KEY?.length || 0
+                });
+
                 try {
                     const { verifyUser } = await import("@/lib/db");
                     const user = await verifyUser(credentials.email, credentials.password);
