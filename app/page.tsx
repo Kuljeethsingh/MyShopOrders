@@ -26,24 +26,24 @@ const ProductCard = ({ product }: { product: Product }) => {
           className="object-cover object-center group-hover:opacity-75"
         />
       </div>
-      <div className="p-4">
+      <div className="p-2 sm:p-4">
         <div className="flex justify-between items-start">
-          <div>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+          <div className="flex-1 min-w-0 mr-2">
+            <h3 className="text-sm sm:text-lg font-medium text-gray-900 dark:text-white truncate">
               {product.name}
             </h3>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            <p className="mt-1 text-xs sm:text-sm text-gray-500 dark:text-gray-400 line-clamp-1">
               {product.description}
             </p>
           </div>
-          <p className="text-lg font-medium text-gray-900 dark:text-white">
+          <p className="text-sm sm:text-lg font-medium text-gray-900 dark:text-white shrink-0">
             ₹{product.price}
           </p>
         </div>
         <button
           onClick={handleAddToCart}
           disabled={isAdded}
-          className={`mt-4 w-full flex items-center justify-center rounded-md border border-transparent px-8 py-2 text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200 ${isAdded
+          className={`mt-2 sm:mt-4 w-full flex items-center justify-center rounded-md border border-transparent px-2 sm:px-8 py-1.5 sm:py-2 text-xs sm:text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200 ${isAdded
             ? 'bg-green-600 hover:bg-green-700 focus:ring-green-500'
             : 'bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500'
             }`}
@@ -85,14 +85,14 @@ export default function Home() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navbar />
 
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-5xl md:text-6xl">
+      <main className="max-w-7xl mx-auto py-4 sm:py-6 sm:px-6 lg:px-8">
+        <div className="px-2 sm:px-4 py-4 sm:py-6 sm:px-0">
+          <div className="text-center mb-8 sm:mb-12">
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-5xl md:text-6xl">
               <span className="block xl:inline">Premium Indian</span>{' '}
               <span className="block text-indigo-600 xl:inline">Sweets</span>
             </h1>
-            <p className="mt-3 max-w-md mx-auto text-base text-gray-500 dark:text-gray-300 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
+            <p className="mt-2 sm:mt-3 max-w-md mx-auto text-sm sm:text-base text-gray-500 dark:text-gray-300 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
               Authentic taste delivered to your doorstep. Handcrafted with love and tradition.
             </p>
           </div>
@@ -102,7 +102,7 @@ export default function Home() {
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-4 xl:gap-x-8">
+            <div className="grid grid-cols-2 gap-3 sm:gap-y-10 sm:gap-x-6 lg:grid-cols-4 xl:gap-x-8">
               {products.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
