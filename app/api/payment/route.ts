@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getRazorpay } from '@/lib/razorpay';
 import crypto from 'crypto';
 import { createOrder } from '@/lib/db';
+import { sendInvoiceEmail } from '@/lib/email';
 
 export async function POST(req: Request) {
     const { amount } = await req.json();
@@ -62,6 +63,27 @@ export async function PUT(req: Request) {
                 razorpay_payment_id: razorpay_payment_id,
                 razorpay_order_id: razorpay_order_id // Store original razorpay order id too
             });
+
+            // Send Automatic Invoice Email
+            try {
+                // Ensure items is suitable for email (array of objects)
+                // In DB it might be stringified, but here 'items' from req is likely the array/object
+                const emailItems = typeof items === 'string' ? JSON.parse(items) : items;
+
+                await sendInvoiceEmail({
+                    orderId: order_id,
+                    email: email,
+                    customer: name || email.split('@')[0],
+                    amount: amount,
+                    items: emailItems
+                });
+                console.log(`[Payment] Invoice email sent for order ${order_id}`);
+            } catch (emailError) {
+                console.error(`[Payment] Failed to send invoice email for order ${order_id}`, emailError);
+                // Don't fail the payment response if email fails, just log it
+            }
+
+            return NextResponse.json({ message: 'Payment verified', order_id: order_id });
 
             return NextResponse.json({ message: 'Payment verified', order_id: order_id });
         } else {
