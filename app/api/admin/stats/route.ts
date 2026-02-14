@@ -41,7 +41,7 @@ export async function GET() {
             .reverse() // Newest first
             .map(o => ({
                 id: o.get('order_id'),
-                customer: o.get('name') || o.get('user_email').split('@')[0],
+                customer: o.get('name') || (o.get('user_email') ? o.get('user_email').split('@')[0] : 'Guest'),
                 email: o.get('user_email'),
                 address: o.get('address'),
                 amount: getAmount(o),

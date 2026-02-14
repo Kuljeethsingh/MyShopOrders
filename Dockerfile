@@ -22,6 +22,6 @@ ENV NODE_OPTIONS=--max_old_space_size=4096
 RUN npm run build
 
 # Start
-
+ENV PORT 8080
 EXPOSE 8080
 CMD ["sh", "-c", "npm start"]
