@@ -17,6 +17,7 @@
     "date-fns": "^4.1.0",
     "google-auth-library": "^10.5.0",
     "google-spreadsheet": "^5.0.2",
+    "googleapis": "^171.4.0",
     "jspdf": "^4.1.0",
     "jspdf-autotable": "^5.0.7",
     "jwt-encode": "^1.0.1",

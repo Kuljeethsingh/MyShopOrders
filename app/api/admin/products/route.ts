@@ -13,6 +13,7 @@ import { getServerSession as originalGetServerSession } from "next-auth";
 
 import fs from 'fs';
 import path from 'path';
+import { uploadImageToDrive } from '@/lib/drive';
 
 export async function POST(req: Request) {
     try {
@@ -28,19 +29,16 @@ export async function POST(req: Request) {
             try {
                 const buffer = Buffer.from(await imageFile.arrayBuffer());
                 const timestamp = Date.now();
-                const filename = `${timestamp}-${imageFile.name.replace(/\s/g, '-')}`;
-                const uploadDir = path.join(process.cwd(), 'public', 'uploads');
+                // Sanitizing filename
+                const filename = `${timestamp}-${imageFile.name.replace(/[^a-zA-Z0-9.-]/g, '')}`;
+                const mimeType = imageFile.type || 'image/jpeg';
 
-                // Ensure directory exists (I created it manually but good to check)
-                if (!fs.existsSync(uploadDir)) {
-                    fs.mkdirSync(uploadDir, { recursive: true });
-                }
-
-                const filepath = path.join(uploadDir, filename);
-                fs.writeFileSync(filepath, buffer);
-                image_url = `/uploads/${filename}`;
+                console.log(`Uploading ${filename} to Drive...`);
+                image_url = await uploadImageToDrive(buffer, filename, mimeType);
+                console.log(`Upload successful: ${image_url}`);
             } catch (e) {
-                console.error("Error saving file:", e);
+                console.error("Error uploading file to Drive:", e);
+                // Fallback or error? For now keeping default/previous image_url is safer so we don't crash
             }
         }
 
@@ -81,18 +79,14 @@ export async function PUT(req: Request) {
             try {
                 const buffer = Buffer.from(await imageFile.arrayBuffer());
                 const timestamp = Date.now();
-                const filename = `${timestamp}-${imageFile.name.replace(/\s/g, '-')}`;
-                const uploadDir = path.join(process.cwd(), 'public', 'uploads');
+                const filename = `${timestamp}-${imageFile.name.replace(/[^a-zA-Z0-9.-]/g, '')}`;
+                const mimeType = imageFile.type || 'image/jpeg';
 
-                if (!fs.existsSync(uploadDir)) {
-                    fs.mkdirSync(uploadDir, { recursive: true });
-                }
-
-                const filepath = path.join(uploadDir, filename);
-                fs.writeFileSync(filepath, buffer);
-                image_url = `/uploads/${filename}`;
+                console.log(`Uploading ${filename} to Drive (Update)...`);
+                image_url = await uploadImageToDrive(buffer, filename, mimeType);
+                console.log(`Upload successful: ${image_url}`);
             } catch (e) {
-                console.error("Error saving file in PUT:", e);
+                console.error("Error uploading file to Drive in PUT:", e);
             }
         }
 
