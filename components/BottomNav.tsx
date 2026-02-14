@@ -26,8 +26,8 @@ export default function BottomNav() {
                 </Link>
 
                 <Link
-                    href="/products" // Assuming we have a products page or similar
-                    className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${isActive('/products') ? 'text-primary' : 'text-gray-500 dark:text-gray-400'
+                    href="/"
+                    className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${isActive('/') ? 'text-primary' : 'text-gray-500 dark:text-gray-400'
                         }`}
                 >
                     <Grid className="w-6 h-6" />
