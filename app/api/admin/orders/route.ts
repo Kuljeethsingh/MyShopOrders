@@ -48,7 +48,7 @@ export async function GET() {
                 contact: o.get('contact'),
                 items: o.get('items')
             };
-        }).reverse(); // Newest first
+        }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()); // Sort by date descending
 
         return NextResponse.json(orders);
     } catch (error) {
