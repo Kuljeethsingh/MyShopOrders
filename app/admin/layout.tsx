@@ -65,7 +65,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex flex-col md:flex-row">
             {/* Mobile Header */}
             <div className="md:hidden bg-white dark:bg-gray-800 p-4 flex justify-between items-center border-b border-gray-200 dark:border-gray-700">
-                <h1 className="text-xl font-bold text-indigo-600 dark:text-indigo-400">Admin</h1>
+                <div className="flex items-center">
+                    <h1 className="text-xl font-bold text-indigo-600 dark:text-indigo-400 mr-4">Admin</h1>
+                    <button
+                        onClick={() => signOut({ callbackUrl: '/' })}
+                        className="p-2 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 rounded-lg"
+                        title="Sign Out"
+                    >
+                        <LogOut className="w-5 h-5" />
+                    </button>
+                </div>
                 <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-2">
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         {isMobileMenuOpen ? (
@@ -80,9 +89,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             {/* Sidebar */}
             <aside className={`${isMobileMenuOpen ? 'block' : 'hidden'} md:block fixed md:static inset-0 z-40 bg-white dark:bg-gray-800 md:w-64 border-r border-gray-200 dark:border-gray-700 flex flex-col`}>
                 <div className="p-6 hidden md:block">
-                    <h1 className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">Admin</h1>
+                    <div className="flex justify-between items-center mb-6">
+                        <h1 className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">Admin</h1>
+                    </div>
                 </div>
-                <nav className="flex-1 px-4 space-y-2 mt-4 md:mt-0">
+
+                {/* Sign Out Button - Moved to Top */}
+                <div className="px-4 mb-4">
+                    <button
+                        onClick={() => signOut({ callbackUrl: '/' })}
+                        className="flex items-center w-full px-4 py-3 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg shadow-sm transition-colors"
+                    >
+                        <LogOut className="w-5 h-5 mr-3" />
+                        Sign Out
+                    </button>
+                </div>
+
+                <nav className="flex-1 px-4 space-y-2">
                     {navItems.map((item) => {
                         const Icon = item.icon;
                         const isActive = pathname === item.href;
@@ -102,15 +125,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         );
                     })}
                 </nav>
-                <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-                    <button
-                        onClick={() => signOut({ callbackUrl: '/' })}
-                        className="flex items-center w-full px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 rounded-lg"
-                    >
-                        <LogOut className="w-5 h-5 mr-3" />
-                        Sign Out
-                    </button>
-                </div>
             </aside>
 
             {/* Main Content */}
