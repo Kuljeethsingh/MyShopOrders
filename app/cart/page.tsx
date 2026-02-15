@@ -40,13 +40,19 @@ export default function CartPage() {
         setIsProcessing(true); // Start processing UI
 
         try {
+            console.log("Initiating payment for amount:", total);
             const res = await fetch('/api/payment', {
                 method: 'POST',
                 body: JSON.stringify({ amount: total }),
             });
-            const order = await res.json();
+            const data = await res.json();
 
-            if (!res.ok) throw new Error(order.error || 'Failed to create order');
+            if (!res.ok) {
+                console.error("Payment API Error:", data);
+                throw new Error(data.error || 'Failed to create order');
+            }
+
+            const order = data;
 
             const options = {
                 key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
@@ -103,7 +109,7 @@ export default function CartPage() {
             rzp1.open();
         } catch (error) {
             console.error("Payment Error:", error);
-            alert("Something went wrong initializing payment.");
+            alert(`Payment Initialization Failed: ${(error as Error).message}`);
             setIsProcessing(false);
         }
     };

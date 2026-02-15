@@ -5,20 +5,37 @@ import { createOrder } from '@/lib/db';
 import { sendInvoiceEmail } from '@/lib/email';
 
 export async function POST(req: Request) {
-    const { amount } = await req.json();
-
-    const options = {
-        amount: amount * 100, // amount in paisa
-        currency: "INR",
-        receipt: "receipt_" + Math.random().toString(36).substring(7),
-    };
-
     try {
+        const body = await req.json();
+        const { amount } = body;
+
+        console.log(`[Payment API] Creating order for amount: ${amount}`);
+
+        if (!amount) {
+            console.error("[Payment API] Amount is missing");
+            return NextResponse.json({ error: 'Amount is required' }, { status: 400 });
+        }
+
+        const options = {
+            amount: Math.round(amount * 100), // amount in paisa, ensure integer
+            currency: "INR",
+            receipt: "receipt_" + Math.random().toString(36).substring(7),
+        };
+
         const razorpay = getRazorpay();
         const order = await razorpay.orders.create(options);
+        console.log(`[Payment API] Order created successfully: ${order.id}`);
         return NextResponse.json(order);
-    } catch (error) {
-        return NextResponse.json({ error: 'Error creating order' }, { status: 500 });
+    } catch (error: any) {
+        console.error("[Payment API] Error creating order:", error);
+        // Log specific Razorpay error details if available
+        if (error.error) {
+            console.error("[Payment API] Razorpay Error Details:", JSON.stringify(error.error, null, 2));
+        }
+        return NextResponse.json({
+            error: error.error?.description || error.message || 'Error creating order',
+            details: error
+        }, { status: 500 });
     }
 }
 
