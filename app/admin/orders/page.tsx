@@ -1,6 +1,7 @@
 
 'use client';
 import { useEffect, useState } from 'react';
+import { format } from 'date-fns';
 
 
 import { Download, FileSpreadsheet, FileText, Mail } from 'lucide-react';
@@ -50,23 +51,24 @@ export default function AdminOrdersPage() {
 
     const filteredOrders = orders.filter(order => {
         const lowerSearch = searchTerm.toLowerCase();
-        return (
+        const matchesSearch = (
             order.id.toLowerCase().includes(lowerSearch) ||
             order.customer.toLowerCase().includes(lowerSearch) ||
             (order.email && order.email.toLowerCase().includes(lowerSearch))
         );
+
+        let matchesDate = true;
+        if (startDate && endDate) {
+            const orderDate = new Date(order.date).toISOString().split('T')[0];
+            matchesDate = orderDate >= startDate && orderDate <= endDate;
+        }
+
+        return matchesSearch && matchesDate;
     });
 
     const handleExportExcel = () => {
-        let ordersToExport = orders;
-        if (startDate && endDate) {
-            ordersToExport = orders.filter(o => {
-                const orderDate = new Date(o.date).toISOString().split('T')[0];
-                return orderDate >= startDate && orderDate <= endDate;
-            });
-        }
-
-        const ws = XLSX.utils.json_to_sheet(ordersToExport.map(o => {
+        // filteredOrders is already filtered by date and search
+        const ws = XLSX.utils.json_to_sheet(filteredOrders.map(o => {
             // Parse items to readable string
             let itemsString = '';
             try {
@@ -82,7 +84,7 @@ export default function AdminOrdersPage() {
                 'Items': itemsString,
                 'Address': o.address,
                 'Contact': o.contact,
-                'Date': new Date(o.date).toLocaleDateString(),
+                'Date': format(new Date(o.date), 'dd MMM yyyy, hh:mm a'),
                 'Email': o.email,
             };
         }));
@@ -94,6 +96,7 @@ export default function AdminOrdersPage() {
     const handleDownloadPDF = (order: any) => {
         console.log("Generating PDF for order:", order);
         const doc = new jsPDF();
+        const formattedDate = format(new Date(order.date), 'dd MMM yyyy');
 
         // --- Header ---
         // Right Side: INVOICE Label and Details
@@ -104,7 +107,7 @@ export default function AdminOrdersPage() {
         doc.setFontSize(10);
         doc.setTextColor(100);
         doc.text(`INVOICE NO: ${order.id.substring(0, 8).toUpperCase()}`, 150, 30);
-        doc.text(`DATE: ${new Date(order.date).toLocaleDateString()}`, 150, 35);
+        doc.text(`DATE: ${formattedDate}`, 150, 35);
 
         // Left Side: Shop Brand
         doc.setFontSize(20);
@@ -352,7 +355,7 @@ export default function AdminOrdersPage() {
                                         {order.id}
                                     </td>
                                     <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300 align-top">
-                                        {new Date(order.date).toLocaleDateString()}
+                                        {format(new Date(order.date), 'dd MMM')}
                                     </td>
                                     <td className="px-4 py-4 text-sm text-gray-500 dark:text-gray-300 align-top">
                                         <div className="font-medium text-gray-900 dark:text-white">{order.customer || 'Guest'}</div>
@@ -442,7 +445,7 @@ export default function AdminOrdersPage() {
                                 </div>
                                 <div>
                                     <div className="text-xs text-gray-500 dark:text-gray-400">Date</div>
-                                    <div className="font-medium dark:text-white">{new Date(selectedOrder.date).toLocaleDateString()}</div>
+                                    <div className="font-medium dark:text-white">{format(new Date(selectedOrder.date), 'dd MMM yyyy, hh:mm a')}</div>
                                 </div>
                                 <div>
                                     <div className="text-xs text-gray-500 dark:text-gray-400">Customer</div>
