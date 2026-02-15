@@ -48,7 +48,11 @@ export async function GET() {
                 contact: o.get('contact'),
                 items: o.get('items')
             };
-        }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()); // Sort by date descending
+        }).sort((a, b) => {
+            const dateA = a.date ? new Date(a.date).getTime() : 0;
+            const dateB = b.date ? new Date(b.date).getTime() : 0;
+            return (isNaN(dateB) ? 0 : dateB) - (isNaN(dateA) ? 0 : dateA);
+        }); // Sort by date descending (safe)
 
         return NextResponse.json(orders);
     } catch (error) {

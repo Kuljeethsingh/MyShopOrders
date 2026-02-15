@@ -336,6 +336,7 @@ export default function AdminOrdersPage() {
                         <thead className="bg-gray-50 dark:bg-gray-900/50">
                             <tr>
                                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Order ID</th>
+                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
                                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Customer</th>
                                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Amount</th>
                                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
@@ -349,7 +350,9 @@ export default function AdminOrdersPage() {
                                 <tr key={order.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                                     <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white align-top">
                                         {order.id}
-                                        <div className="text-xs text-gray-400 mt-1">{new Date(order.date).toLocaleDateString()}</div>
+                                    </td>
+                                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300 align-top">
+                                        {new Date(order.date).toLocaleDateString()}
                                     </td>
                                     <td className="px-4 py-4 text-sm text-gray-500 dark:text-gray-300 align-top">
                                         <div className="font-medium text-gray-900 dark:text-white">{order.customer || 'Guest'}</div>
