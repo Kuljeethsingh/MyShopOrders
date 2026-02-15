@@ -66,26 +66,26 @@ export default function AdminDashboard() {
                         <table className="min-w-full text-sm text-left">
                             <thead className="text-gray-500 border-b dark:border-gray-700">
                                 <tr>
-                                    <th className="py-2">Order ID</th>
-                                    <th className="py-2">Customer</th>
-                                    <th className="py-2">Address</th>
-                                    <th className="py-2">Amount</th>
-                                    <th className="py-2">Date</th>
-                                    <th className="py-2">Status</th>
+                                    <th className="px-6 py-4 font-semibold">Order ID</th>
+                                    <th className="px-6 py-4 font-semibold">Customer</th>
+                                    <th className="px-6 py-4 font-semibold">Address</th>
+                                    <th className="px-6 py-4 font-semibold">Amount</th>
+                                    <th className="px-6 py-4 font-semibold">Date</th>
+                                    <th className="px-6 py-4 font-semibold">Status</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y dark:divide-gray-700">
                                 {stats.recentOrders.map(order => (
-                                    <tr key={order.id}>
-                                        <td className="py-3 font-medium">{order.id}</td>
-                                        <td className="py-3">
+                                    <tr key={order.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                                        <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">{order.id}</td>
+                                        <td className="px-6 py-4">
                                             <div className="font-medium text-gray-900 dark:text-white">{order.customer}</div>
                                         </td>
-                                        <td className="py-3 max-w-xs truncate" title={order.address}>{order.address}</td>
-                                        <td className="py-3">₹{order.amount}</td>
-                                        <td className="py-3">{new Date(order.date).toLocaleDateString()}</td>
-                                        <td className="py-3">
-                                            <span className={`px-2 py-1 rounded-full text-xs ${order.status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                                        <td className="px-6 py-4 max-w-xs truncate text-gray-500 dark:text-gray-300" title={order.address}>{order.address}</td>
+                                        <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">₹{order.amount}</td>
+                                        <td className="px-6 py-4 text-gray-500 dark:text-gray-400">{new Date(order.date).toLocaleDateString()}</td>
+                                        <td className="px-6 py-4">
+                                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${order.status === 'paid' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
                                                 }`}>
                                                 {order.status}
                                             </span>
