@@ -143,29 +143,29 @@ export default function AdminProductsPage() {
                     <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                         <thead className="bg-gray-50 dark:bg-gray-900/50">
                             <tr>
-                                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Product</th>
-                                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Price</th>
-                                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Category</th>
-                                <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Product</th>
+                                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Price</th>
+                                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Category</th>
+                                <th className="px-3 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                             {products.map((product) => (
                                 <tr key={product.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                                    <td className="px-6 py-4 whitespace-nowrap">
+                                    <td className="px-3 py-3 whitespace-nowrap">
                                         <div className="flex flex-col">
-                                            <div className="text-sm font-medium text-gray-900 dark:text-white">{product.name}</div>
-                                            <div className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[250px]">{product.description}</div>
+                                            <div className="text-sm font-medium text-gray-900 dark:text-white truncate max-w-[150px]">{product.name}</div>
+                                            <div className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[150px]">{product.description}</div>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                                    <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
                                         ₹{product.price}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                                    <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
                                         {product.category || '-'}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <button onClick={() => handleEdit(product)} className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-4">
+                                    <td className="px-3 py-3 whitespace-nowrap text-right text-sm font-medium">
+                                        <button onClick={() => handleEdit(product)} className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-2">
                                             <Edit className="w-4 h-4" />
                                         </button>
                                         <button onClick={() => handleDelete(product.id)} className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
