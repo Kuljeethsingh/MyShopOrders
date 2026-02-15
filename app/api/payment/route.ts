@@ -25,6 +25,8 @@ export async function POST(req: Request) {
 export async function PUT(req: Request) {
     try {
         const data = await req.json();
+        console.log("[Payment API] Received verification data:", JSON.stringify(data, null, 2));
+
         const {
             razorpay_order_id,
             razorpay_payment_id,
@@ -43,6 +45,9 @@ export async function PUT(req: Request) {
             .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET || "")
             .update(body.toString())
             .digest("hex");
+
+        console.log(`[Payment API] Expected Signature: ${expectedSignature}`);
+        console.log(`[Payment API] Received Signature: ${razorpay_signature}`);
 
         const isAuthentic = expectedSignature === razorpay_signature;
 
@@ -71,11 +76,14 @@ export async function PUT(req: Request) {
                 const emailItems = typeof items === 'string' ? JSON.parse(items) : items;
 
                 await sendInvoiceEmail({
-                    orderId: order_id,
-                    email: email,
+                    id: order_id,
                     customer: name || email.split('@')[0],
+                    email: email,
                     amount: amount,
-                    items: emailItems
+                    items: JSON.stringify(emailItems), // sendInvoiceEmail expects stringified items or handles it? Let's check lib/email.ts
+                    date: new Date().toISOString(),
+                    address: address,
+                    contact: contact
                 });
                 console.log(`[Payment] Invoice email sent for order ${order_id}`);
             } catch (emailError) {
@@ -84,9 +92,8 @@ export async function PUT(req: Request) {
             }
 
             return NextResponse.json({ message: 'Payment verified', order_id: order_id });
-
-            return NextResponse.json({ message: 'Payment verified', order_id: order_id });
         } else {
+            console.error("[Payment API] Signature mismatch");
             return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
         }
     } catch (error: any) {

@@ -18,6 +18,8 @@ export default function CartPage() {
     const [contact, setContact] = useState('');
     const [name, setName] = useState('');
 
+    const [isProcessing, setIsProcessing] = useState(false);
+
     useEffect(() => {
         if (session?.user?.name) {
             setName(session.user.name);
@@ -35,57 +37,75 @@ export default function CartPage() {
             return;
         }
 
-        const res = await fetch('/api/payment', {
-            method: 'POST',
-            body: JSON.stringify({ amount: total }),
-        });
-        const order = await res.json();
+        setIsProcessing(true); // Start processing UI
 
-        const options = {
-            key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-            amount: order.amount,
-            currency: "INR",
-            name: "SweetShop",
-            description: "Order Payment",
-            order_id: order.id,
-            handler: async function (response: any) {
-                const verify = await fetch('/api/payment', {
-                    method: 'PUT',
-                    body: JSON.stringify({
-                        razorpay_order_id: response.razorpay_order_id,
-                        razorpay_payment_id: response.razorpay_payment_id,
-                        razorpay_signature: response.razorpay_signature,
-                        // Pass additional details to save order
-                        address,
-                        contact,
-                        email: session.user?.email,
-                        name: name, // Use state name
-                        items: items,
-                        amount: total
-                    }),
-                });
+        try {
+            const res = await fetch('/api/payment', {
+                method: 'POST',
+                body: JSON.stringify({ amount: total }),
+            });
+            const order = await res.json();
 
-                const verifyRes = await verify.json();
-                if (verifyRes.message === 'Payment verified') {
-                    alert("Payment Successful! Order Placed.");
-                    clearCart();
-                    router.push('/');
-                } else {
-                    alert("Payment Verification Failed");
-                }
-            },
-            prefill: {
-                name: session.user?.name,
-                email: session.user?.email,
-                contact: contact
-            },
-            theme: {
-                color: "#4F46E5",
-            },
-        };
+            if (!res.ok) throw new Error(order.error || 'Failed to create order');
 
-        const rzp1 = new (window as any).Razorpay(options);
-        rzp1.open();
+            const options = {
+                key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+                amount: order.amount,
+                currency: "INR",
+                name: "SweetShop",
+                description: "Order Payment",
+                order_id: order.id,
+                handler: async function (response: any) {
+                    // Still processing verification
+                    const verify = await fetch('/api/payment', {
+                        method: 'PUT',
+                        body: JSON.stringify({
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_signature: response.razorpay_signature,
+                            // Pass additional details to save order
+                            address,
+                            contact,
+                            email: session.user?.email,
+                            name: name, // Use state name
+                            items: items,
+                            amount: total
+                        }),
+                    });
+
+                    const verifyRes = await verify.json();
+                    if (verifyRes.message === 'Payment verified') {
+                        // Keep processing true until redirect happens or show success modal
+                        alert("Payment Successful! Order Placed.");
+                        clearCart();
+                        router.push('/');
+                    } else {
+                        alert("Payment Verification Failed");
+                        setIsProcessing(false);
+                    }
+                },
+                modal: {
+                    ondismiss: function () {
+                        setIsProcessing(false);
+                    }
+                },
+                prefill: {
+                    name: session.user?.name,
+                    email: session.user?.email,
+                    contact: contact
+                },
+                theme: {
+                    color: "#4F46E5",
+                },
+            };
+
+            const rzp1 = new (window as any).Razorpay(options);
+            rzp1.open();
+        } catch (error) {
+            console.error("Payment Error:", error);
+            alert("Something went wrong initializing payment.");
+            setIsProcessing(false);
+        }
     };
 
     return (
@@ -227,9 +247,10 @@ export default function CartPage() {
                                 <div className="mt-6">
                                     <button
                                         onClick={handlePayment}
-                                        className="w-full bg-indigo-600 border border-transparent rounded-md shadow-sm py-3 px-4 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-50 focus:ring-indigo-500"
+                                        disabled={isProcessing}
+                                        className="w-full bg-indigo-600 border border-transparent rounded-md shadow-sm py-3 px-4 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-50 focus:ring-indigo-500 disabled:opacity-75 disabled:cursor-wait"
                                     >
-                                        Checkout (Razorpay)
+                                        {isProcessing ? 'Processing Payment...' : 'Checkout (Razorpay)'}
                                     </button>
                                 </div>
                             </section>

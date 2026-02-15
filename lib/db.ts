@@ -372,3 +372,59 @@ export async function saveShopDetails(formattedDetails: ShopSettings): Promise<b
 
     return true;
 }
+export async function saveVerificationOTP(email: string, otp: string): Promise<boolean> {
+    const doc = await loadDoc();
+    let sheet = doc.sheetsByTitle['Verifications'];
+    if (!sheet) {
+        try {
+            sheet = await doc.addSheet({ title: 'Verifications', headerValues: ['email', 'otp', 'expiry', 'created_at'] });
+        } catch (e) {
+            console.error("[DB] Could not create Verifications sheet", e);
+            return false;
+        }
+    }
+
+    // Clean up old OTPs for this email if any (optional, but good practice)
+    const rows = await sheet.getRows();
+    const existingRow = rows.find(row => row.get('email') === email);
+
+    const expiry = (Date.now() + 15 * 60 * 1000).toString(); // 15 mins
+
+    if (existingRow) {
+        existingRow.set('otp', otp);
+        existingRow.set('expiry', expiry);
+        existingRow.set('created_at', new Date().toISOString());
+        await existingRow.save();
+    } else {
+        await sheet.addRow({
+            email,
+            otp,
+            expiry,
+            created_at: new Date().toISOString()
+        });
+    }
+    return true;
+}
+
+export async function verifySignupOTP(email: string, otp: string): Promise<boolean> {
+    const doc = await loadDoc();
+    const sheet = doc.sheetsByTitle['Verifications'];
+    if (!sheet) return false;
+
+    const rows = await sheet.getRows();
+    const row = rows.find(r => r.get('email') === email);
+
+    if (!row) return false;
+
+    const storedOTP = row.get('otp');
+    const expiry = parseInt(row.get('expiry') || '0');
+
+    if (storedOTP === otp && Date.now() < expiry) {
+        // OTP is valid. We can delete it now or let a cleanup job do it. 
+        // Deleting it prevents replay attacks (though row.delete might be slow).
+        await row.delete();
+        return true;
+    }
+
+    return false;
+}

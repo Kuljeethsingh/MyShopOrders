@@ -1,11 +1,11 @@
 
 'use client';
 
-import { useSession } from 'next-auth/react';
+import { useSession, signOut } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import { useRouter } from 'next/navigation';
-import { FileText, Download, User as UserIcon, Package, MapPin, Phone } from 'lucide-react';
+import { FileText, Download, User as UserIcon, Package, MapPin, Phone, LogOut } from 'lucide-react';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
@@ -15,6 +15,7 @@ export default function ProfilePage() {
     const [orders, setOrders] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedOrder, setSelectedOrder] = useState<any>(null);
+    const [isAdmin, setIsAdmin] = useState(false);
 
     useEffect(() => {
         if (status === 'unauthenticated') {
@@ -36,46 +37,89 @@ export default function ProfilePage() {
                     console.error(err);
                     setLoading(false);
                 });
+
+            fetch('/api/auth/role')
+                .then(res => res.json())
+                .then(data => setIsAdmin(data.role === 'admin'))
+                .catch(console.error);
         }
     }, [session, status, router]);
 
     const handleDownloadPDF = (order: any) => {
         const doc = new jsPDF();
 
-        // Header
-        doc.setFontSize(22);
-        doc.setTextColor(79, 70, 229);
-        doc.text("SweetShop", 105, 20, { align: 'center' });
+        // Colors
+        const primaryColor = [79, 70, 229]; // Indigo 600
 
-        doc.setFontSize(16);
-        doc.setTextColor(0);
-        doc.text("INVOICE", 105, 40, { align: 'center' });
+        // Header
+        doc.setFontSize(24);
+        doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+        doc.text("SweetShop", 20, 20);
 
         doc.setFontSize(10);
-        doc.text(`Order ID: ${order.id}`, 20, 50);
-        doc.text(`Date: ${new Date(order.date).toLocaleDateString()}`, 20, 56);
-        doc.text(`Customer: ${order.customer}`, 20, 62);
+        doc.setTextColor(100);
+        doc.text("Delicious moments, delivered.", 20, 25);
+
+        // Invoice Title
+        doc.setFontSize(18);
+        doc.setTextColor(0);
+        doc.text("INVOICE", 160, 20, { align: 'right' });
+
+        // Order Info
+        doc.setFontSize(10);
+        doc.text(`Invoice #: ${order.id}`, 160, 28, { align: 'right' });
+        doc.text(`Date: ${new Date(order.date).toLocaleDateString()}`, 160, 33, { align: 'right' });
+
+        // Bill To
+        doc.setFontSize(12);
+        doc.setTextColor(0);
+        doc.text("Bill To:", 20, 45);
+        doc.setFontSize(10);
+        doc.setTextColor(80);
+        doc.text(order.customer || session?.user?.name || "Customer", 20, 52);
+        doc.text(order.address || "Address not provided", 20, 57);
+        doc.text(`Phone: ${order.contact || "N/A"}`, 20, 62);
 
         try {
             const items = JSON.parse(order.items || '[]');
             const tableData = items.map((item: any) => [
                 item.name,
                 item.quantity,
-                parseFloat(item.price || 0).toFixed(2),
-                (parseFloat(item.price || 0) * parseInt(item.quantity || 1)).toFixed(2)
+                `Rs. ${parseFloat(item.price || 0).toFixed(2)}`,
+                `Rs. ${(parseFloat(item.price || 0) * parseInt(item.quantity || 1)).toFixed(2)}`
             ]);
 
             (doc as any).autoTable({
                 startY: 70,
-                head: [['Item', 'Qty', 'Price', 'Total']],
+                head: [['Item Description', 'Qty', 'Price', 'Total']],
                 body: tableData,
+                theme: 'striped',
+                headStyles: { fillColor: primaryColor },
+                columnStyles: {
+                    0: { cellWidth: 80 },
+                    2: { halign: 'right' },
+                    3: { halign: 'right' }
+                }
             });
 
             const finalY = (doc as any).lastAutoTable.finalY + 10;
-            doc.text(`Total Amount: Rs. ${order.amount}`, 140, finalY);
+
+            // Total
+            doc.setFontSize(12);
+            doc.setTextColor(0);
+            doc.text("Total Amount:", 140, finalY);
+            doc.setFontSize(14);
+            doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+            doc.text(`Rs. ${order.amount}`, 190, finalY, { align: 'right' });
+
+            // Footer
+            doc.setFontSize(10);
+            doc.setTextColor(150);
+            doc.text("Thank you for your business!", 105, 280, { align: 'center' });
+
         } catch (e) { }
 
-        doc.save(`invoice_${order.id}.pdf`);
+        doc.save(`SweetShop_Invoice_${order.id}.pdf`);
     };
 
     if (status === 'loading' || loading) {
@@ -101,6 +145,24 @@ export default function ProfilePage() {
                                 <div className="mt-4 inline-flex px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
                                     Member
                                 </div>
+
+                                {isAdmin && (
+                                    <button
+                                        onClick={() => router.push('/admin')}
+                                        className="mt-6 w-full flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors shadow-sm"
+                                    >
+                                        <Package className="w-4 h-4" />
+                                        Admin Dashboard
+                                    </button>
+                                )}
+
+                                <button
+                                    onClick={() => signOut({ callbackUrl: '/' })}
+                                    className="mt-6 w-full flex items-center justify-center gap-2 px-4 py-2 border border-red-200 text-red-600 rounded-md hover:bg-red-50 dark:border-red-900/30 dark:text-red-400 dark:hover:bg-red-900/10 transition-colors"
+                                >
+                                    <LogOut className="w-4 h-4" />
+                                    Sign Out
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -134,7 +196,7 @@ export default function ProfilePage() {
                                                     </span>
                                                 </div>
                                                 <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                                    Placed on {new Date(order.date).toLocaleDateString()}
+                                                    Placed on {new Date(order.date).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                                 </div>
                                             </div>
                                             <div className="mt-2 sm:mt-0 text-right">

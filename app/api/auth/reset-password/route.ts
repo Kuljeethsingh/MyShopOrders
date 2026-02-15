@@ -1,7 +1,6 @@
 
 import { NextResponse } from 'next/server';
 import { loadDoc } from '@/lib/db';
-import nodemailer from 'nodemailer';
 
 export async function POST(req: Request) {
     try {
@@ -27,26 +26,11 @@ export async function POST(req: Request) {
         const { saveOTP } = await import('@/lib/db');
         await saveOTP(email, otp);
 
-        // Configure Email Transporter
-        const { transporter } = await import('@/lib/nodemailer');
-
-        console.log(`[RESET API] EMAIL_USER present: ${!!process.env.EMAIL_USER}`);
-        console.log(`[RESET API] EMAIL_PASSWORD length: ${process.env.EMAIL_PASSWORD?.length}`);
-
+        // Send Email using centralized lib
+        const { sendPasswordResetEmail } = await import('@/lib/email');
 
         try {
-            await transporter.sendMail({
-                from: process.env.EMAIL_USER,
-                to: email,
-                subject: 'Sweetshop Password Reset OTP',
-                html: `
-                <h3>Password Reset Request</h3>
-                <p>Your OTP for password reset is: <strong>${otp}</strong></p>
-                <p>This OTP is valid for 15 minutes.</p>
-                <p>If you didn't request this, please ignore this email.</p>
-            `,
-            });
-            console.log(`[RESET API] OTP email sent to ${email}`);
+            await sendPasswordResetEmail(email, otp);
             return NextResponse.json({ message: 'OTP sent to your email.' });
         } catch (emailError) {
             console.error('[RESET API] Error sending email:', emailError);

@@ -8,12 +8,13 @@ async function getDriveClient() {
         throw new Error('Missing Google Service Account credentials');
     }
 
-    const auth = new google.auth.JWT(
-        process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-        undefined,
-        process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
-        SCOPES
-    );
+    const auth = new google.auth.GoogleAuth({
+        credentials: {
+            client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+            private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+        },
+        scopes: SCOPES,
+    });
 
     return google.drive({ version: 'v3', auth });
 }
@@ -81,8 +82,9 @@ export async function uploadImageToDrive(fileBuffer: Buffer, fileName: string, m
 
         return `https://drive.google.com/uc?export=view&id=${fileId}`;
 
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error uploading to Google Drive:', error);
+        console.error('Error details:', error.response?.data || error.message);
         throw error;
     }
 }

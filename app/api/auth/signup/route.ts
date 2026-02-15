@@ -1,14 +1,19 @@
 
 import { NextResponse } from 'next/server';
-import { createUser } from '@/lib/db';
+import { createUser, verifySignupOTP } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 
 export async function POST(req: Request) {
     try {
-        const { name, email, password } = await req.json();
+        const { name, email, password, otp } = await req.json();
 
-        if (!name || !email || !password) {
-            return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
+        if (!name || !email || !password || !otp) {
+            return NextResponse.json({ error: 'Missing fields (OTP required)' }, { status: 400 });
+        }
+
+        const isVerified = await verifySignupOTP(email, otp);
+        if (!isVerified) {
+            return NextResponse.json({ error: 'Invalid or expired OTP' }, { status: 400 });
         }
 
         const password_hash = await bcrypt.hash(password, 10);
