@@ -40,8 +40,8 @@ const ProductCard = ({ product }: { product: Product }) => {
             onClick={handleAddToCart}
             disabled={isAdded}
             className={`w-full py-2.5 px-4 rounded-lg font-medium text-sm transition-all duration-300 transform active:scale-95 ${isAdded
-                ? 'bg-green-600 text-white shadow-inner'
-                : 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-100 shadow-md hover:shadow-xl'
+              ? 'bg-green-600 text-white shadow-inner'
+              : 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-100 shadow-md hover:shadow-xl'
               }`}
           >
             {isAdded ? 'Added to Cart' : 'Add to Cart'}
@@ -98,7 +98,7 @@ export default function Home() {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500"></div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-8">
             {products.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
