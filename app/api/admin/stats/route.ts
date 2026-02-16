@@ -39,15 +39,36 @@ export async function GET() {
         const currentOrders = orders
             .slice()
             .reverse() // Newest first
-            .map(o => ({
-                id: o.get('order_id'),
-                customer: o.get('name') || (o.get('user_email') ? o.get('user_email').split('@')[0] : 'Guest'),
-                email: o.get('user_email'),
-                address: o.get('address'),
-                amount: getAmount(o),
-                date: o.get('created_at'),
-                status: o.get('status') || 'Pending'
-            }))
+            .map(o => {
+                const userEmail = (o.get('user_email') || '').toLowerCase().trim();
+                let customerName = '';
+
+                // 1. Try to find the official registered name from Users sheet
+                const user = users.find(u => (u.get('email') || '').toLowerCase().trim() === userEmail);
+                if (user && user.get('name') && user.get('name').trim() !== '') {
+                    customerName = user.get('name');
+                }
+
+                // 2. Fallback to Name stored in the Order (if any)
+                if ((!customerName || customerName === '') && o.get('name')) {
+                    customerName = o.get('name');
+                }
+
+                // 3. Last resort: Email prefix
+                if (!customerName || customerName === '') {
+                    customerName = userEmail ? userEmail.split('@')[0] : 'Guest';
+                }
+
+                return {
+                    id: o.get('order_id'),
+                    customer: customerName,
+                    email: o.get('user_email'), // Keep original case for display if needed
+                    address: o.get('address'),
+                    amount: getAmount(o),
+                    date: o.get('created_at'),
+                    status: o.get('status') || 'Pending'
+                };
+            })
             .filter(o => !['Delivered', 'Cancelled', 'Refunded'].includes(o.status))
             .slice(0, 10); // Limit to 10 active orders
 

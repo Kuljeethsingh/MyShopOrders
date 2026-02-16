@@ -406,6 +406,7 @@ export async function saveVerificationOTP(email: string, otp: string): Promise<b
     return true;
 }
 
+// ... existing code ...
 export async function verifySignupOTP(email: string, otp: string): Promise<boolean> {
     const doc = await loadDoc();
     const sheet = doc.sheetsByTitle['Verifications'];
@@ -420,11 +421,39 @@ export async function verifySignupOTP(email: string, otp: string): Promise<boole
     const expiry = parseInt(row.get('expiry') || '0');
 
     if (storedOTP === otp && Date.now() < expiry) {
-        // OTP is valid. We can delete it now or let a cleanup job do it. 
-        // Deleting it prevents replay attacks (though row.delete might be slow).
         await row.delete();
         return true;
     }
 
     return false;
 }
+
+export async function logPriceChange(productId: string, productName: string, oldPrice: number, newPrice: number, updatedBy: string): Promise<boolean> {
+    const doc = await loadDoc();
+    let sheet = doc.sheetsByTitle['PriceLogs'];
+
+    if (!sheet) {
+        try {
+            sheet = await doc.addSheet({ title: 'PriceLogs', headerValues: ['product_id', 'product_name', 'old_price', 'new_price', 'updated_by', 'timestamp'] });
+        } catch (e) {
+            console.error("[DB] Failed to create PriceLogs sheet", e);
+            return false;
+        }
+    }
+
+    try {
+        await sheet.addRow({
+            product_id: productId,
+            product_name: productName,
+            old_price: oldPrice,
+            new_price: newPrice,
+            updated_by: updatedBy,
+            timestamp: new Date().toISOString()
+        });
+        return true;
+    } catch (e) {
+        console.error("[DB] Failed to log price change", e);
+        return false;
+    }
+}
+

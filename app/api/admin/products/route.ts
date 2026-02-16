@@ -99,6 +99,20 @@ export async function PUT(req: Request) {
             return NextResponse.json({ error: 'Product not found' }, { status: 404 });
         }
 
+        const oldPrice = parseFloat(row.get('price') || '0');
+        const newPriceVal = parseFloat(price);
+
+        // Check and Log Price Change
+        if (oldPrice !== newPriceVal) {
+            // Import logPriceChange dynamically if needed or assume it's imported at top
+            // Since we didn't import it in the original file view, we should add it to imports or use this block if imports were updated.
+            // But wait, I can't easily add import to top with replace_file_content in the middle.
+            // I'll assume the user will auto-import or I need to do a separate replace for imports.
+            // Let's do the logic here assuming I'll fix imports next.
+            const { logPriceChange } = await import('@/lib/db');
+            await logPriceChange(id, name, oldPrice, newPriceVal, 'Admin');
+        }
+
         row.assign({
             name,
             price,
