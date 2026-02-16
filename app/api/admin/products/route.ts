@@ -1,72 +1,22 @@
 
 import { NextResponse } from 'next/server';
 import { loadDoc } from '@/lib/db';
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth"; // We need to export authOptions from somewhere or use generic getSession if route.ts isn't available
-// Actually, in app router we use:
-import { getServerSession as originalGetServerSession } from "next-auth";
-// But commonly we define authOptions in app/api/auth/[...nextauth]/route.ts. 
-// Let's assume user is authenticated for now, or check headers. 
-// Getting server session in route handlers requires authOptions.
-// I'll skip strict role check in API for this iteration to avoid config hell if authOptions aren't exported, 
-// but I'll add a comment. authenticating via frontend layout for now.
-
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import fs from 'fs';
 import path from 'path';
 import { uploadImageToDrive } from '@/lib/drive';
 
-export async function POST(req: Request) {
-    try {
-        const formData = await req.formData();
-        const name = formData.get('name') as string;
-        const price = formData.get('price') as string;
-        const description = formData.get('description') as string;
-        const category = formData.get('category') as string;
-        const imageFile = formData.get('image') as File | null;
-        let image_url = 'https://images.unsplash.com/photo-1599785209707-3084885f528b?q=80&w=300&auto=format&fit=crop';
-
-        if (imageFile && imageFile.size > 0) {
-            try {
-                const buffer = Buffer.from(await imageFile.arrayBuffer());
-                const timestamp = Date.now();
-                // Sanitizing filename
-                const filename = `${timestamp}-${imageFile.name.replace(/[^a-zA-Z0-9.-]/g, '')}`;
-                const mimeType = imageFile.type || 'image/jpeg';
-
-                console.log(`Uploading ${filename} to Drive...`);
-                image_url = await uploadImageToDrive(buffer, filename, mimeType);
-                console.log(`Upload successful: ${image_url}`);
-            } catch (e) {
-                console.error("Error uploading file to Drive:", e);
-                // Fallback or error? For now keeping default/previous image_url is safer so we don't crash
-            }
-        }
-
-        const doc = await loadDoc();
-        const sheet = doc.sheetsByTitle['Products'];
-
-        const newProduct = {
-            id: Math.random().toString(36).substr(2, 9),
-            name,
-            price,
-            description,
-            category,
-            image_url,
-        };
-
-        await sheet.addRow(newProduct);
-
-        return NextResponse.json({ message: 'Product added', product: newProduct });
-    } catch (error) {
-        console.error('Error adding product', error);
-        return NextResponse.json({ error: 'Failed to add product' }, { status: 500 });
-    }
-}
+// ... existing POST ...
 
 export async function PUT(req: Request) {
     try {
+        const session = await getServerSession(authOptions);
+        const adminEmail = session?.user?.email || 'Admin';
+
         const formData = await req.formData();
         const id = formData.get('id') as string;
+        // ... rest of form data extraction ...
         const name = formData.get('name') as string;
         const price = formData.get('price') as string;
         const description = formData.get('description') as string;
@@ -105,12 +55,8 @@ export async function PUT(req: Request) {
         // Check and Log Price Change
         if (oldPrice !== newPriceVal) {
             // Import logPriceChange dynamically if needed or assume it's imported at top
-            // Since we didn't import it in the original file view, we should add it to imports or use this block if imports were updated.
-            // But wait, I can't easily add import to top with replace_file_content in the middle.
-            // I'll assume the user will auto-import or I need to do a separate replace for imports.
-            // Let's do the logic here assuming I'll fix imports next.
             const { logPriceChange } = await import('@/lib/db');
-            await logPriceChange(id, name, oldPrice, newPriceVal, 'Admin');
+            await logPriceChange(id, name, oldPrice, newPriceVal, adminEmail);
         }
 
         row.assign({
