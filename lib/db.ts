@@ -432,9 +432,11 @@ export async function logPriceChange(productId: string, productName: string, old
     const doc = await loadDoc();
     let sheet = doc.sheetsByTitle['PriceLogs'];
 
+    const newSchemaHeaders = ['id', 'product_name', 'old_price', 'new_price', 'admin_email', 'date_time'];
+
     if (!sheet) {
         try {
-            sheet = await doc.addSheet({ title: 'PriceLogs', headerValues: ['product_id', 'product_name', 'old_price', 'new_price', 'updated_by', 'timestamp'] });
+            sheet = await doc.addSheet({ title: 'PriceLogs', headerValues: newSchemaHeaders });
         } catch (e) {
             console.error("[DB] Failed to create PriceLogs sheet", e);
             return false;
@@ -442,18 +444,36 @@ export async function logPriceChange(productId: string, productName: string, old
     }
 
     try {
-        await sheet.addRow({
-            product_id: productId,
-            product_name: productName,
-            old_price: oldPrice,
-            new_price: newPrice,
-            admin_email: updatedBy,
-            date_time: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'medium' }) // Readable Date & Time
-        });
+        await sheet.loadHeaderRow();
+        const headers = sheet.headerValues;
+
+        const rowData: any = {};
+
+        // Dynamic Mapping
+        // ID
+        if (headers.includes('id')) rowData['id'] = productId;
+        else if (headers.includes('product_id')) rowData['product_id'] = productId;
+
+        // Name
+        if (headers.includes('product_name')) rowData['product_name'] = productName;
+
+        // Prices
+        if (headers.includes('old_price')) rowData['old_price'] = oldPrice;
+        if (headers.includes('new_price')) rowData['new_price'] = newPrice;
+
+        // User / Email
+        if (headers.includes('admin_email')) rowData['admin_email'] = updatedBy;
+        else if (headers.includes('updated_by')) rowData['updated_by'] = updatedBy;
+
+        // Date / Time
+        const readableDate = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'medium' });
+        if (headers.includes('date_time')) rowData['date_time'] = readableDate;
+        else if (headers.includes('timestamp')) rowData['timestamp'] = readableDate;
+
+        await sheet.addRow(rowData);
         return true;
     } catch (e) {
         console.error("[DB] Failed to log price change", e);
         return false;
     }
-}
 
