@@ -52,11 +52,17 @@ export async function PUT(req: Request) {
         const oldPrice = parseFloat(row.get('price') || '0');
         const newPriceVal = parseFloat(price);
 
+        console.log(`[Products API] Updating product ${id}. Old Price: ${oldPrice}, New Price: ${newPriceVal}`);
+
         // Check and Log Price Change
         if (oldPrice !== newPriceVal) {
+            console.log("[Products API] Price change detected. Logging...");
             // Import logPriceChange dynamically if needed or assume it's imported at top
             const { logPriceChange } = await import('@/lib/db');
-            await logPriceChange(id, name, oldPrice, newPriceVal, adminEmail);
+            const logSuccess = await logPriceChange(id, name, oldPrice, newPriceVal, adminEmail);
+            console.log(`[Products API] Price change logged? ${logSuccess}`);
+        } else {
+            console.log("[Products API] Price unchanged. Skipping log.");
         }
 
         row.assign({

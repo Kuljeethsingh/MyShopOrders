@@ -447,8 +447,8 @@ export async function logPriceChange(productId: string, productName: string, old
             product_name: productName,
             old_price: oldPrice,
             new_price: newPrice,
-            updated_by: updatedBy,
-            timestamp: new Date().toISOString()
+            admin_email: updatedBy,
+            date_time: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'medium' }) // Readable Date & Time
         });
         return true;
     } catch (e) {
