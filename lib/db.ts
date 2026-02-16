@@ -472,8 +472,6 @@ export async function logPriceChange(productId: string, productName: string, old
 
         await sheet.addRow(rowData);
         return true;
-    } catch (e) {
-        console.error("[DB] Failed to log price change", e);
-        return false;
     }
+}
 
